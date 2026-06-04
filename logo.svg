@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 180" width="260" height="180">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2ecc71"/>
+      <stop offset="100%" stop-color="#1a8a45"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="40%" stop-color="#f5c518"/>
+      <stop offset="100%" stop-color="#c8860a"/>
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#c8860a"/>
+    </linearGradient>
+    <!-- sunburst lines clipped to oval -->
+    <clipPath id="ovalClip">
+      <ellipse cx="130" cy="90" rx="118" ry="82"/>
+    </clipPath>
+  </defs>
+
+  <!-- Gold border oval -->
+  <ellipse cx="130" cy="90" rx="126" ry="88" fill="url(#borderGrad)"/>
+  <!-- Green fill oval -->
+  <ellipse cx="130" cy="90" rx="118" ry="82" fill="url(#bgGrad)"/>
+
+  <!-- Sunburst lines -->
+  <g clip-path="url(#ovalClip)" opacity="0.18" stroke="#005520" stroke-width="1.2">
+    <line x1="130" y1="90" x2="130" y2="5"/>
+    <line x1="130" y1="90" x2="200" y2="10"/>
+    <line x1="130" y1="90" x2="245" y2="40"/>
+    <line x1="130" y1="90" x2="255" y2="80"/>
+    <line x1="130" y1="90" x2="245" y2="120"/>
+    <line x1="130" y1="90" x2="210" y2="155"/>
+    <line x1="130" y1="90" x2="165" y2="172"/>
+    <line x1="130" y1="90" x2="130" y2="175"/>
+    <line x1="130" y1="90" x2="95" y2="172"/>
+    <line x1="130" y1="90" x2="50" y2="155"/>
+    <line x1="130" y1="90" x2="15" y2="120"/>
+    <line x1="130" y1="90" x2="5" y2="80"/>
+    <line x1="130" y1="90" x2="15" y2="40"/>
+    <line x1="130" y1="90" x2="60" y2="10"/>
+    <line x1="130" y1="90" x2="170" y2="8"/>
+    <line x1="130" y1="90" x2="90" y2="8"/>
+    <line x1="130" y1="90" x2="230" y2="60"/>
+    <line x1="130" y1="90" x2="30" y2="60"/>
+    <line x1="130" y1="90" x2="230" y2="118"/>
+    <line x1="130" y1="90" x2="30" y2="118"/>
+  </g>
+
+  <!-- Leaf / plant icon -->
+  <!-- Centre leaf -->
+  <path d="M130 22 C124 34 120 50 130 62 C140 50 136 34 130 22Z" fill="url(#goldGrad)"/>
+  <!-- Left leaf -->
+  <path d="M130 42 C116 36 102 38 96 48 C108 52 122 48 130 42Z" fill="url(#goldGrad)"/>
+  <!-- Right leaf -->
+  <path d="M130 42 C144 36 158 38 164 48 C152 52 138 48 130 42Z" fill="url(#goldGrad)"/>
+  <!-- Far left leaf -->
+  <path d="M115 50 C103 42 90 46 86 56 C97 58 109 56 115 50Z" fill="url(#goldGrad)" opacity="0.85"/>
+  <!-- Far right leaf -->
+  <path d="M145 50 C157 42 170 46 174 56 C163 58 151 56 145 50Z" fill="url(#goldGrad)" opacity="0.85"/>
+  <!-- Stem -->
+  <line x1="130" y1="62" x2="130" y2="72" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- "Joyforth" text -->
+  <text x="130" y="118" font-family="Georgia, serif" font-size="36" font-weight="bold"
+        fill="url(#goldGrad)" text-anchor="middle" letter-spacing="0">Joyforth</text>
+
+  <!-- Decorators + FOODS -->
+  <line x1="60" y1="133" x2="88" y2="133" stroke="url(#goldGrad)" stroke-width="1.5"/>
+  <circle cx="58" cy="133" r="2" fill="url(#goldGrad)"/>
+  <text x="130" y="140" font-family="Georgia, serif" font-size="15" font-weight="bold"
+        fill="url(#goldGrad)" text-anchor="middle" letter-spacing="3">FOODS</text>
+  <line x1="200" y1="133" x2="172" y2="133" stroke="url(#goldGrad)" stroke-width="1.5"/>
+  <circle cx="202" cy="133" r="2" fill="url(#goldGrad)"/>
+</svg>

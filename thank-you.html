@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Message Sent – JoyForth Foods</title>
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #003d1f 0%, #006633 100%);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 52px 44px;
+      max-width: 480px; width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 80px rgba(0,0,0,.3);
+      animation: pop .5s ease;
+    }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(.94) translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .check { font-size: 64px; margin-bottom: 20px; }
+    img { height: 64px; object-fit: contain; margin: 0 auto 20px; display: block; }
+    h1 { font-size: 26px; font-weight: 900; color: #007A3D; margin-bottom: 12px; }
+    p  { font-size: 15px; color: #5a6a5f; line-height: 1.7; margin-bottom: 32px; }
+    a {
+      display: inline-block;
+      background: #007A3D; color: #fff;
+      padding: 14px 32px; border-radius: 50px;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    a:hover { background: #005a2c; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="images/logo.png" alt="JoyForth Foods" />
+    <div class="check">✅</div>
+    <h1>Message Received!</h1>
+    <p>Thank you for reaching out to JoyForth Foods. We've received your message and will get back to you as soon as possible.</p>
+    <a href="index.html">← Back to Website</a>
+  </div>
+</body>
+</html>

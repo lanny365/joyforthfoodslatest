@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joyforth Foods – Admin Login</title>
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f9f4;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-wrap {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(0,122,61,.15);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo img {
+      height: 80px;
+      object-fit: contain;
+      margin: 0 auto 12px;
+      display: block;
+    }
+    .login-logo h2 { font-size: 20px; font-weight: 800; color: #007A3D; }
+    .login-logo p { font-size: 13px; color: #5a6a5f; margin-top: 4px; }
+
+    h3 { font-size: 22px; font-weight: 800; color: #1a3a26; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #5a6a5f; margin-bottom: 28px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+    label { font-size: 13px; font-weight: 600; color: #1a3a26; }
+    input {
+      padding: 12px 14px;
+      border: 1.5px solid #b2dfca;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #007A3D; }
+
+    .btn-login {
+      width: 100%;
+      background: #007A3D;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 6px;
+    }
+    .btn-login:hover { background: #005a2c; }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #5a6a5f;
+    }
+    .back-link a { color: #007A3D; font-weight: 600; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-logo">
+      <img src="images/logo.png" alt="Joyforth Foods" />
+      <p>Admin Portal</p>
+    </div>
+    <h3>Welcome Back</h3>
+    <p class="subtitle">Sign in to manage your website content</p>
+
+    <div class="error" id="error-msg">Incorrect username or password. Please try again.</div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter username" required autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn-login">Sign In →</button>
+    </form>
+
+    <div class="back-link">
+      <a href="index.html">← Back to website</a>
+    </div>
+  </div>
+
+  <script>
+    // Credentials — change these to what you want
+    const ADMIN_USER = 'joyforth';
+    const ADMIN_PASS = 'admin2024';
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      const err  = document.getElementById('error-msg');
+
+      if (user === ADMIN_USER && pass === ADMIN_PASS) {
+        sessionStorage.setItem('jf_admin', 'true');
+        window.location.href = 'admin.html';
+      } else {
+        err.style.display = 'block';
+      }
+    });
+
+    // Already logged in
+    if (sessionStorage.getItem('jf_admin') === 'true') {
+      window.location.href = 'admin.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joyforth Foods – Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #007A3D;
+      --green-dark: #005a2c;
+      --gold: #F4C542;
+      --cream: #f0f9f4;
+      --border: #b2dfca;
+      --text: #1a3a26;
+      --muted: #5a6a5f;
+    }
+    body { font-family: 'Inter', sans-serif; background: #f0f9f4; color: var(--text); }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 240px; height: 100vh;
+      background: var(--green);
+      display: flex; flex-direction: column;
+      padding: 24px 0;
+      z-index: 10;
+    }
+    .sidebar-logo {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo img { height: 56px; object-fit: contain; background: rgba(255,255,255,.75); border-radius: 50px; padding: 3px 10px; }
+    .sidebar-logo p { color: rgba(255,255,255,.7); font-size: 11px; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px;
+      color: rgba(255,255,255,.75);
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      border-left-color: var(--gold);
+    }
+    .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.15);
+    }
+    .btn-logout {
+      width: 100%;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.2); }
+
+    /* MAIN */
+    .main { margin-left: 240px; padding: 32px; min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .topbar h1 { font-size: 24px; font-weight: 800; color: var(--text); }
+    .topbar p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .view-site {
+      background: var(--gold);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .view-site:hover { background: #f7d265; }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* UPLOAD GRID */
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .upload-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,122,61,.06);
+    }
+    .upload-card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .upload-card-header h3 { font-size: 14px; font-weight: 700; }
+    .upload-card-header .slide-tag { font-size: 11px; color: var(--muted); margin-left: auto; background: #e6f4ed; padding: 2px 8px; border-radius: 50px; }
+
+    /* Size advice badge */
+    .size-tip {
+      width: 100%;
+      background: #fffbeb;
+      border: 1px solid #F4C542;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #7a5c00;
+      line-height: 1.6;
+    }
+    .size-tip strong { color: #5a3e00; display: block; margin-bottom: 2px; }
+    .size-tip .ratio-pill {
+      display: inline-block;
+      background: #F4C542;
+      color: #1a3a26;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 1px 8px;
+      border-radius: 50px;
+      margin-right: 4px;
+    }
+
+    .upload-preview {
+      background: #f0f9f4;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Aspect ratios per section */
+    .upload-preview.ratio-hero    { aspect-ratio: 16/9; height: auto; }
+    .upload-preview.ratio-product { aspect-ratio: 4/3;  height: auto; }
+    .upload-preview.ratio-cat-lg  { aspect-ratio: 3/4;  height: auto; }
+    .upload-preview.ratio-cat-sm  { aspect-ratio: 4/3;  height: auto; }
+    .upload-preview.ratio-story   { aspect-ratio: 5/6;  height: auto; }
+
+    .upload-preview img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .upload-preview .placeholder {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--muted); padding: 20px;
+    }
+    .upload-preview .placeholder span { font-size: 36px; }
+    .upload-preview .placeholder p { font-size: 12px; text-align: center; }
+
+    .upload-card-footer { padding: 14px 18px; }
+
+    .upload-label {
+      display: block;
+      width: 100%;
+      background: var(--green);
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .upload-label:hover { background: var(--green-dark); }
+    .upload-label input[type="file"] { display: none; }
+
+    .btn-remove {
+      width: 100%;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: none;
+      transition: background .2s;
+    }
+    .btn-remove:hover { background: #fee2e2; }
+    .btn-remove.visible { display: block; }
+
+    .success-toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--green);
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .3s;
+      z-index: 999;
+    }
+    .success-toast.show { transform: translateY(0); opacity: 1; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .stat-card .stat-icon { font-size: 28px; margin-bottom: 10px; }
+    .stat-card .stat-num { font-size: 28px; font-weight: 800; color: var(--green); }
+    .stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* REVIEWS */
+    .review-form-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .review-form-card h3 { font-size: 15px; font-weight: 800; color: var(--green); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .review-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .star-picker { display: flex; gap: 6px; margin-top: 4px; }
+    .star-picker span { font-size: 24px; cursor: pointer; color: #ddd; transition: color .15s; }
+    .star-picker span.active { color: #F4C542; }
+
+    .reviews-list { display: flex; flex-direction: column; gap: 14px; }
+    .review-item {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .review-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .review-body { flex: 1; }
+    .review-body .review-stars { color: #F4C542; font-size: 14px; margin-bottom: 4px; }
+    .review-body strong { font-size: 14px; font-weight: 700; }
+    .review-body .review-loc { font-size: 12px; color: var(--muted); margin-left: 6px; }
+    .review-body p { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.6; font-style: italic; }
+    .review-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+    .btn-edit-review {
+      background: #e6f4ed; border: 1px solid var(--border);
+      color: var(--green); padding: 6px 14px;
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-edit-review:hover { background: #c8e6d4; }
+    .btn-del-review {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      color: #dc2626; padding: 6px 14px;
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-del-review:hover { background: #fee2e2; }
+    .empty-reviews { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; background: #fff; border-radius: 14px; border: 1.5px dashed var(--border); }
+
+    /* TEXT EDITOR */
+    .content-editor { display: flex; flex-direction: column; gap: 24px; }
+    .content-section {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .content-section-title {
+      font-size: 15px; font-weight: 800; color: var(--green);
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .content-group {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .content-group-label {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .field-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .field-row label { font-size: 12px; font-weight: 600; color: var(--text); }
+    .field-row input, .field-row textarea {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      background: #fff;
+      outline: none;
+      resize: vertical;
+      transition: border-color .2s;
+    }
+    .field-row input:focus, .field-row textarea:focus { border-color: var(--green); }
+    .btn-save {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 4px;
+    }
+    .btn-save:hover { background: var(--green-dark); }
+
+    /* SITE MODE PANEL */
+    .sitemode-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 600px;
+    }
+    .sitemode-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+    .sitemode-header-text h3 { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .sitemode-header-text p { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 380px; }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+    .toggle-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .toggle {
+      position: relative; width: 72px; height: 38px;
+      cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #e2e8f0;
+      border-radius: 50px;
+      transition: background .3s;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.1);
+    }
+    .toggle input:checked + .toggle-track { background: #007A3D; }
+    .toggle-thumb {
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 30px; height: 30px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(34px); }
+
+    .sitemode-status {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      font-size: 14px; font-weight: 600;
+      margin-bottom: 24px;
+      transition: all .3s;
+    }
+    .sitemode-status.live { background: #e6f4ed; color: #007A3D; border: 1.5px solid #b2dfca; }
+    .sitemode-status.construction { background: #fffbeb; color: #7a5c00; border: 1.5px solid #F4C542; }
+    .sitemode-status .status-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .sitemode-status.live .status-dot { background: #007A3D; box-shadow: 0 0 0 3px rgba(0,122,61,.2); }
+    .sitemode-status.construction .status-dot { background: #F4C542; box-shadow: 0 0 0 3px rgba(244,197,66,.3); }
+
+    .sitemode-info {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .sitemode-info h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .sitemode-info ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .sitemode-info ul li { font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 8px; }
+    .sitemode-info ul li::before { content: '→'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+    @media(max-width: 768px) {
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main { margin-left: 0; padding: 20px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="images/logo.png" alt="Joyforth Foods" />
+      <p>Admin Dashboard</p>
+    </div>
+    <div class="nav-item active" onclick="showPanel('dashboard')">
+      <span class="icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPanel('hero')">
+      <span class="icon">🖼️</span> Hero Images
+    </div>
+    <div class="nav-item" onclick="showPanel('products')">
+      <span class="icon">📦</span> Product Images
+    </div>
+    <div class="nav-item" onclick="showPanel('categories')">
+      <span class="icon">🗂️</span> Category Images
+    </div>
+    <div class="nav-item" onclick="showPanel('story')">
+      <span class="icon">📖</span> Our Story Image
+    </div>
+    <div class="nav-item" onclick="showPanel('content')">
+      <span class="icon">✏️</span> Edit Text Content
+    </div>
+    <div class="nav-item" onclick="showPanel('reviews')">
+      <span class="icon">⭐</span> Customer Reviews
+    </div>
+    <div class="nav-item" onclick="showPanel('sitemode')">
+      <span class="icon">🚧</span> Site Mode
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="panel-title">Dashboard</h1>
+        <p id="panel-sub">Welcome back, Joyforth Admin</p>
+      </div>
+      <a href="index.html" class="view-site" target="_blank">View Website →</a>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">🖼️</div><div class="stat-num" id="count-hero">3</div><div class="stat-label">Hero Slides</div></div>
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-num" id="count-products">8</div><div class="stat-label">Products</div></div>
+        <div class="stat-card"><div class="stat-icon">🗂️</div><div class="stat-num">3</div><div class="stat-label">Categories</div></div>
+        <div class="stat-card"><div class="stat-icon">📸</div><div class="stat-num" id="count-uploaded">0</div><div class="stat-label">Images Uploaded</div></div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:28px;">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">Quick Guide</h3>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">
+          Use the sidebar to navigate between sections.<br/>
+          • <strong>Hero Images</strong> — Upload images for each slideshow slide<br/>
+          • <strong>Product Images</strong> — Upload images for each product card<br/>
+          • <strong>Category Images</strong> — Upload images for the Pick Your Favourite section<br/>
+          • <strong>Our Story Image</strong> — Upload the main story section image<br/><br/>
+          Images are saved in your browser and applied to the site automatically.
+        </p>
+      </div>
+    </div>
+
+    <!-- HERO IMAGES -->
+    <div class="panel" id="panel-hero">
+      <div class="upload-grid">
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🥜 Peanuts Slide</h3><span class="slide-tag">Slide 1</span></div>
+          <div class="upload-preview ratio-hero" id="prev-hero-0">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">1920 × 1080 px</span> Landscape · 16:9 ratio<br/>Min width: 1200px · Format: JPG or PNG</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('hero-0', this)" /></label>
+            <button class="btn-remove" id="rm-hero-0" onclick="removeImage('hero-0')">✕ Remove</button>
+          </div>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🍌 Plantain Chips Slide</h3><span class="slide-tag">Slide 2</span></div>
+          <div class="upload-preview ratio-hero" id="prev-hero-1">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">1920 × 1080 px</span> Landscape · 16:9 ratio<br/>Min width: 1200px · Format: JPG or PNG</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('hero-1', this)" /></label>
+            <button class="btn-remove" id="rm-hero-1" onclick="removeImage('hero-1')">✕ Remove</button>
+          </div>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🍎 Dehydrated Fruits Slide</h3><span class="slide-tag">Slide 3</span></div>
+          <div class="upload-preview ratio-hero" id="prev-hero-2">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">1920 × 1080 px</span> Landscape · 16:9 ratio<br/>Min width: 1200px · Format: JPG or PNG</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('hero-2', this)" /></label>
+            <button class="btn-remove" id="rm-hero-2" onclick="removeImage('hero-2')">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT IMAGES -->
+    <div class="panel" id="panel-products">
+      <div class="upload-grid" id="products-upload-grid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- CATEGORY IMAGES -->
+    <div class="panel" id="panel-categories">
+      <div class="upload-grid">
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🥜 Peanuts</h3><span class="slide-tag">Large Card</span></div>
+          <div class="upload-preview ratio-cat-lg" id="prev-cat-0">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">700 × 900 px</span> Portrait · 3:4 ratio<br/>This is the large left card · Min width: 500px</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('cat-0', this)" /></label>
+            <button class="btn-remove" id="rm-cat-0" onclick="removeImage('cat-0')">✕ Remove</button>
+          </div>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🍌 Plantain Chips</h3><span class="slide-tag">Small Card</span></div>
+          <div class="upload-preview ratio-cat-sm" id="prev-cat-1">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">600 × 420 px</span> Landscape · 4:3 ratio<br/>Right side small card · Min width: 400px</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('cat-1', this)" /></label>
+            <button class="btn-remove" id="rm-cat-1" onclick="removeImage('cat-1')">✕ Remove</button>
+          </div>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>🍎 Dehydrated Foods</h3><span class="slide-tag">Small Card</span></div>
+          <div class="upload-preview ratio-cat-sm" id="prev-cat-2">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">600 × 420 px</span> Landscape · 4:3 ratio<br/>Right side small card · Min width: 400px</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('cat-2', this)" /></label>
+            <button class="btn-remove" id="rm-cat-2" onclick="removeImage('cat-2')">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORY IMAGE -->
+    <div class="panel" id="panel-story">
+      <div class="upload-grid" style="max-width:360px;">
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>📖 Our Story Main Image</h3></div>
+          <div class="upload-preview ratio-story" id="prev-story-main">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">500 × 600 px</span> Portrait · 5:6 ratio<br/>Min width: 400px · Format: JPG or PNG<br/>Use a warm, natural photo of your product</div>
+            <label class="upload-label">📤 Upload Image<input type="file" accept="image/*" onchange="uploadImage('story-main', this)" /></label>
+            <button class="btn-remove" id="rm-story-main" onclick="removeImage('story-main')">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="panel" id="panel-reviews">
+
+      <div class="review-form-card">
+        <h3 id="review-form-title">➕ Add New Review</h3>
+        <input type="hidden" id="review-edit-id" value="" />
+        <div class="review-form-grid">
+          <div class="field-row">
+            <label>Customer Name *</label>
+            <input type="text" id="rv-name" placeholder="e.g. Adaeze Okonkwo" />
+          </div>
+          <div class="field-row">
+            <label>Location *</label>
+            <input type="text" id="rv-location" placeholder="e.g. Lagos, Nigeria" />
+          </div>
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <label>Rating *</label>
+          <div class="star-picker" id="star-picker">
+            <span data-val="1">★</span>
+            <span data-val="2">★</span>
+            <span data-val="3">★</span>
+            <span data-val="4">★</span>
+            <span data-val="5">★</span>
+          </div>
+          <input type="hidden" id="rv-rating" value="5" />
+        </div>
+        <div class="field-row" style="margin-top:14px;">
+          <label>Review Text *</label>
+          <textarea id="rv-text" rows="3" placeholder="Write the customer's review here..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button class="btn-save" onclick="saveReview()">💾 Save Review</button>
+          <button class="btn-save" style="background:#aaa;" onclick="cancelEdit()" id="btn-cancel-edit" hidden>✕ Cancel Edit</button>
+        </div>
+      </div>
+
+      <div id="reviews-list-wrap">
+        <div class="empty-reviews" id="empty-reviews">⭐ No reviews yet. Add your first review above.</div>
+        <div class="reviews-list" id="reviews-list"></div>
+      </div>
+
+    </div>
+
+    <!-- SITE MODE -->
+    <div class="panel" id="panel-sitemode">
+      <div class="sitemode-card">
+        <div class="sitemode-header">
+          <div class="sitemode-header-text">
+            <h3>🚧 Site Construction Mode</h3>
+            <p>Turn this on to show visitors a "Coming Soon" page while you work on the site. You will still be able to preview everything as admin.</p>
+          </div>
+          <div class="toggle-wrap">
+            <span class="toggle-label">Mode</span>
+            <label class="toggle">
+              <input type="checkbox" id="uc-toggle" onchange="toggleConstruction(this)" />
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb" id="toggle-thumb">🌐</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="sitemode-status live" id="sitemode-status">
+          <div class="status-dot"></div>
+          <span id="sitemode-status-text">🟢 Site is <strong>LIVE</strong> — All visitors can see your website normally.</span>
+        </div>
+
+        <div class="sitemode-info">
+          <h4>How it works</h4>
+          <ul>
+            <li>When <strong>Construction Mode is ON</strong>, visitors see a beautiful "Coming Soon" page with your contact details.</li>
+            <li>When you are logged in as Admin, you will see a gold banner at the top of the site instead of the overlay.</li>
+            <li>When <strong>Construction Mode is OFF</strong>, your full website is visible to everyone.</li>
+            <li>This setting is saved in your browser — it will persist after you close and reopen the site.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEXT CONTENT EDITOR -->
+    <div class="panel" id="panel-content">
+      <div class="content-editor">
+
+        <!-- HERO SLIDES -->
+        <div class="content-section">
+          <div class="content-section-title">🖼️ Hero Slides</div>
+
+          <div class="content-group">
+            <div class="content-group-label">Slide 1 — Peanuts</div>
+            <div class="field-row">
+              <label>Heading</label>
+              <input type="text" id="txt-hero0-heading" placeholder="The Finest Premium Peanuts" />
+            </div>
+            <div class="field-row">
+              <label>Description</label>
+              <textarea id="txt-hero0-desc" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="content-group">
+            <div class="content-group-label">Slide 2 — Plantain Chips</div>
+            <div class="field-row">
+              <label>Heading</label>
+              <input type="text" id="txt-hero1-heading" placeholder="The Crunchiest Premium Plantain Chips" />
+            </div>
+            <div class="field-row">
+              <label>Description</label>
+              <textarea id="txt-hero1-desc" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="content-group">
+            <div class="content-group-label">Slide 3 — Dehydrated Fruits</div>
+            <div class="field-row">
+              <label>Heading</label>
+              <input type="text" id="txt-hero2-heading" placeholder="Naturally Dried Premium Fruit Snacks" />
+            </div>
+            <div class="field-row">
+              <label>Description</label>
+              <textarea id="txt-hero2-desc" rows="3"></textarea>
+            </div>
+          </div>
+          <button class="btn-save" onclick="saveGroup('hero')">💾 Save Hero Text</button>
+        </div>
+
+        <!-- OUR STORY -->
+        <div class="content-section">
+          <div class="content-section-title">📖 Our Story</div>
+          <div class="field-row">
+            <label>Section Heading</label>
+            <input type="text" id="txt-story-heading" placeholder="Grown with Care, Crafted with Love" />
+          </div>
+          <div class="field-row">
+            <label>Paragraph 1</label>
+            <textarea id="txt-story-p1" rows="3"></textarea>
+          </div>
+          <div class="field-row">
+            <label>Paragraph 2</label>
+            <textarea id="txt-story-p2" rows="3"></textarea>
+          </div>
+          <button class="btn-save" onclick="saveGroup('story')">💾 Save Story Text</button>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="content-section">
+          <div class="content-section-title">📞 Contact Details</div>
+          <div class="field-row">
+            <label>WhatsApp Number</label>
+            <input type="text" id="txt-whatsapp" placeholder="+2348023176523" />
+          </div>
+          <div class="field-row">
+            <label>Email Address</label>
+            <input type="email" id="txt-email" placeholder="info@joyforthfoods.com" />
+          </div>
+          <div class="field-row">
+            <label>UK Office Address</label>
+            <textarea id="txt-addr-uk" rows="2"></textarea>
+          </div>
+          <div class="field-row">
+            <label>Nigeria Office Address</label>
+            <textarea id="txt-addr-ng" rows="2"></textarea>
+          </div>
+          <button class="btn-save" onclick="saveGroup('contact')">💾 Save Contact Info</button>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="content-section">
+          <div class="content-section-title">🦶 Footer</div>
+          <div class="field-row">
+            <label>Tagline</label>
+            <input type="text" id="txt-footer-tag" placeholder="Pure peanuts, perfected. From trusted farms to your table." />
+          </div>
+          <div class="field-row">
+            <label>Newsletter Heading</label>
+            <input type="text" id="txt-newsletter-heading" placeholder="Fresh deals, straight to you" />
+          </div>
+          <div class="field-row">
+            <label>Newsletter Subtext</label>
+            <input type="text" id="txt-newsletter-sub" placeholder="Subscribe for exclusive offers..." />
+          </div>
+          <button class="btn-save" onclick="saveGroup('footer')">💾 Save Footer Text</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <div class="success-toast" id="toast">✅ Image uploaded successfully!</div>
+
+  <script>
+    // Auth guard
+    if (sessionStorage.getItem('jf_admin') !== 'true') {
+      window.location.href = 'login.html';
+    }
+
+    // Product cards definition
+    const productCards = [
+      { key: 'prod-0', label: 'Roasted Peanuts 500g' },
+      { key: 'prod-1', label: 'Honey Peanuts 1kg' },
+      { key: 'prod-2', label: 'Salted Peanuts 500g' },
+      { key: 'prod-3', label: 'Plantain Chips 200g' },
+      { key: 'prod-4', label: 'Spicy Plantain Chips 400g' },
+      { key: 'prod-5', label: 'Sweet Plantain Chips 400g' },
+      { key: 'prod-6', label: 'Dehydrated Mango 150g' },
+      { key: 'prod-7', label: 'Dehydrated Veggie Mix 200g' },
+    ];
+
+    // Build product upload grid
+    const grid = document.getElementById('products-upload-grid');
+    productCards.forEach((p, i) => {
+      grid.innerHTML += `
+        <div class="upload-card">
+          <div class="upload-card-header"><h3>${p.label}</h3><span class="slide-tag">Product ${i+1}</span></div>
+          <div class="upload-preview ratio-product" id="prev-${p.key}">
+            <div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>
+          </div>
+          <div class="upload-card-footer">
+            <div class="size-tip"><strong>📐 Recommended Size</strong><span class="ratio-pill">800 × 600 px</span> Landscape · 4:3 ratio<br/>Min width: 600px · Format: JPG or PNG</div>
+            <label class="upload-label">📤 Upload Image
+              <input type="file" accept="image/*" onchange="uploadImage('${p.key}', this)" />
+            </label>
+            <button class="btn-remove" id="rm-${p.key}" onclick="removeImage('${p.key}')">✕ Remove</button>
+          </div>
+        </div>`;
+    });
+
+    // Panel navigation
+    const panels = { dashboard:'Dashboard', hero:'Hero Images', products:'Product Images', categories:'Category Images', story:'Our Story Image', content:'Edit Text Content', reviews:'Customer Reviews', sitemode:'Site Mode' };
+    const subs   = { dashboard:'Welcome back, Joyforth Admin', hero:'Upload slideshow images', products:'Upload product card images', categories:'Upload category section images', story:'Upload the Our Story section image', content:'Edit the text shown on your website', reviews:'Add, edit or remove customer testimonials', sitemode:'Control whether visitors see a Coming Soon page' };
+
+    function showPanel(name) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => {
+        if (n.textContent.trim().toLowerCase().includes(name === 'dashboard' ? 'dashboard' : panels[name].split(' ')[0].toLowerCase())) {
+          n.classList.add('active');
+        }
+      });
+      document.getElementById('panel-title').textContent = panels[name];
+      document.getElementById('panel-sub').textContent   = subs[name];
+    }
+
+    // Upload image
+    function uploadImage(key, input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        localStorage.setItem('jf_img_' + key, dataUrl);
+        renderPreview(key, dataUrl);
+        updateCount();
+        showToast('Image uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage(key) {
+      localStorage.removeItem('jf_img_' + key);
+      const prev = document.getElementById('prev-' + key);
+      prev.innerHTML = '<div class="placeholder"><span>🖼️</span><p>No image uploaded</p></div>';
+      document.getElementById('rm-' + key).classList.remove('visible');
+      updateCount();
+    }
+
+    function renderPreview(key, dataUrl) {
+      const prev = document.getElementById('prev-' + key);
+      if (prev) {
+        prev.innerHTML = `<img src="${dataUrl}" alt="Preview" />`;
+        const rm = document.getElementById('rm-' + key);
+        if (rm) rm.classList.add('visible');
+      }
+    }
+
+    // Load saved images on page load
+    function loadSaved() {
+      const keys = ['hero-0','hero-1','hero-2','cat-0','cat-1','cat-2','story-main',
+        ...productCards.map(p => p.key)];
+      keys.forEach(key => {
+        const saved = localStorage.getItem('jf_img_' + key);
+        if (saved) renderPreview(key, saved);
+      });
+      updateCount();
+    }
+
+    function updateCount() {
+      let count = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        if (localStorage.key(i).startsWith('jf_img_')) count++;
+      }
+      document.getElementById('count-uploaded').textContent = count;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = '✅ ' + msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ===== TEXT EDITOR =====
+    const textFields = [
+      'txt-hero0-heading','txt-hero0-desc',
+      'txt-hero1-heading','txt-hero1-desc',
+      'txt-hero2-heading','txt-hero2-desc',
+      'txt-story-heading','txt-story-p1','txt-story-p2',
+      'txt-whatsapp','txt-email','txt-addr-uk','txt-addr-ng',
+      'txt-footer-tag','txt-newsletter-heading','txt-newsletter-sub'
+    ];
+
+    function loadTextFields() {
+      textFields.forEach(id => {
+        const saved = localStorage.getItem('jf_txt_' + id);
+        const el = document.getElementById(id);
+        if (saved && el) el.value = saved;
+      });
+    }
+
+    function saveGroup(group) {
+      const groupMap = {
+        hero:    ['txt-hero0-heading','txt-hero0-desc','txt-hero1-heading','txt-hero1-desc','txt-hero2-heading','txt-hero2-desc'],
+        story:   ['txt-story-heading','txt-story-p1','txt-story-p2'],
+        contact: ['txt-whatsapp','txt-email','txt-addr-uk','txt-addr-ng'],
+        footer:  ['txt-footer-tag','txt-newsletter-heading','txt-newsletter-sub']
+      };
+      groupMap[group].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim()) {
+          localStorage.setItem('jf_txt_' + id, el.value.trim());
+        } else {
+          localStorage.removeItem('jf_txt_' + id);
+        }
+      });
+      showToast('Text saved successfully!');
+    }
+
+    // ===== REVIEWS =====
+    let selectedRating = 5;
+
+    // Star picker
+    document.querySelectorAll('.star-picker span').forEach(star => {
+      star.addEventListener('mouseover', () => highlightStars(+star.dataset.val));
+      star.addEventListener('mouseleave', () => highlightStars(selectedRating));
+      star.addEventListener('click', () => {
+        selectedRating = +star.dataset.val;
+        document.getElementById('rv-rating').value = selectedRating;
+        highlightStars(selectedRating);
+      });
+    });
+    highlightStars(5);
+
+    function highlightStars(n) {
+      document.querySelectorAll('.star-picker span').forEach(s => {
+        s.classList.toggle('active', +s.dataset.val <= n);
+      });
+    }
+
+    function getReviews() {
+      return JSON.parse(localStorage.getItem('jf_reviews') || '[]');
+    }
+    function saveReviews(arr) {
+      localStorage.setItem('jf_reviews', JSON.stringify(arr));
+    }
+
+    function saveReview() {
+      const name     = document.getElementById('rv-name').value.trim();
+      const location = document.getElementById('rv-location').value.trim();
+      const rating   = +document.getElementById('rv-rating').value;
+      const text     = document.getElementById('rv-text').value.trim();
+      const editId   = document.getElementById('review-edit-id').value;
+
+      if (!name || !location || !text) { showToast('Please fill in all fields!'); return; }
+
+      const reviews = getReviews();
+      if (editId) {
+        const idx = reviews.findIndex(r => r.id === editId);
+        if (idx > -1) reviews[idx] = { id: editId, name, location, rating, text };
+      } else {
+        reviews.push({ id: Date.now().toString(), name, location, rating, text });
+      }
+      saveReviews(reviews);
+      renderReviews();
+      resetReviewForm();
+      showToast(editId ? 'Review updated!' : 'Review added!');
+    }
+
+    function deleteReview(id) {
+      if (!confirm('Delete this review?')) return;
+      saveReviews(getReviews().filter(r => r.id !== id));
+      renderReviews();
+      showToast('Review deleted.');
+    }
+
+    function editReview(id) {
+      const review = getReviews().find(r => r.id === id);
+      if (!review) return;
+      document.getElementById('rv-name').value     = review.name;
+      document.getElementById('rv-location').value = review.location;
+      document.getElementById('rv-text').value     = review.text;
+      document.getElementById('rv-rating').value   = review.rating;
+      document.getElementById('review-edit-id').value = id;
+      selectedRating = review.rating;
+      highlightStars(selectedRating);
+      document.getElementById('review-form-title').textContent = '✏️ Edit Review';
+      document.getElementById('btn-cancel-edit').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      resetReviewForm();
+    }
+
+    function resetReviewForm() {
+      document.getElementById('rv-name').value = '';
+      document.getElementById('rv-location').value = '';
+      document.getElementById('rv-text').value = '';
+      document.getElementById('review-edit-id').value = '';
+      selectedRating = 5;
+      document.getElementById('rv-rating').value = 5;
+      highlightStars(5);
+      document.getElementById('review-form-title').textContent = '➕ Add New Review';
+      document.getElementById('btn-cancel-edit').hidden = true;
+    }
+
+    function renderReviews() {
+      const reviews = getReviews();
+      const list    = document.getElementById('reviews-list');
+      const empty   = document.getElementById('empty-reviews');
+      list.innerHTML = '';
+      empty.style.display = reviews.length ? 'none' : 'block';
+      reviews.forEach(r => {
+        const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        const initials = r.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+        list.innerHTML += `
+          <div class="review-item">
+            <div class="review-avatar">${initials}</div>
+            <div class="review-body">
+              <div class="review-stars">${stars}</div>
+              <strong>${r.name}</strong><span class="review-loc">📍 ${r.location}</span>
+              <p>"${r.text}"</p>
+            </div>
+            <div class="review-actions">
+              <button class="btn-edit-review" onclick="editReview('${r.id}')">✏️ Edit</button>
+              <button class="btn-del-review" onclick="deleteReview('${r.id}')">🗑 Delete</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function logout() {
+      sessionStorage.removeItem('jf_admin');
+      window.location.href = 'login.html';
+    }
+
+    // ===== CONSTRUCTION TOGGLE =====
+    function toggleConstruction(checkbox) {
+      const on = checkbox.checked;
+      localStorage.setItem('jf_construction', on ? 'true' : 'false');
+      updateSiteModeUI(on);
+      showToast(on ? '🚧 Construction mode ON — visitors see Coming Soon page' : '🟢 Site is now LIVE for all visitors');
+    }
+
+    function updateSiteModeUI(on) {
+      const status  = document.getElementById('sitemode-status');
+      const text    = document.getElementById('sitemode-status-text');
+      const thumb   = document.getElementById('toggle-thumb');
+      if (on) {
+        status.className = 'sitemode-status construction';
+        text.innerHTML   = '🚧 Construction Mode <strong>ON</strong> — Visitors see the "Coming Soon" page.';
+        thumb.textContent = '🚧';
+      } else {
+        status.className = 'sitemode-status live';
+        text.innerHTML   = '🟢 Site is <strong>LIVE</strong> — All visitors can see your website normally.';
+        thumb.textContent = '🌐';
+      }
+    }
+
+    // Init toggle state on load
+    (function initSiteMode() {
+      const on = localStorage.getItem('jf_construction') === 'true';
+      const cb = document.getElementById('uc-toggle');
+      if (cb) cb.checked = on;
+      updateSiteModeUI(on);
+    })();
+
+    loadSaved();
+    loadTextFields();
+    renderReviews();
+  </script>
+</body>
+</html>
