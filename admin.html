@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Joyforth Foods – Admin Dashboard</title>
   <link rel="icon" type="image/png" href="images/logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -337,6 +338,24 @@
     }
     .btn-save:hover { background: var(--green-dark); }
 
+    /* SETUP STEPS */
+    .setup-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 4px; }
+    .setup-step { display: flex; align-items: flex-start; gap: 14px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--green); color: #007A3D;
+      font-weight: 800; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .setup-code {
+      display: inline-block; margin-top: 6px;
+      background: #1a3a26; color: #F4C542;
+      padding: 6px 14px; border-radius: 6px;
+      font-family: monospace; font-size: 13px;
+      user-select: all; cursor: text;
+    }
+
     /* SITE MODE PANEL */
     .sitemode-card {
       background: #fff;
@@ -630,11 +649,52 @@
 
     <!-- SITE MODE -->
     <div class="panel" id="panel-sitemode">
-      <div class="sitemode-card">
+
+      <!-- SETUP CARD (shown when not configured) -->
+      <div class="sitemode-card" id="setup-card">
+        <h3 style="font-size:17px;font-weight:800;margin-bottom:8px;">⚙️ One-Time Setup Required</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:22px;">
+          To control construction mode from anywhere in the world, you need a free <strong>JSONBin</strong> account. This stores your site setting online so all visitors see the correct state.
+        </p>
+
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div>Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--green);font-weight:700;">jsonbin.io</a> → Create a free account → Click <strong>"Create Bin"</strong></div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div>Paste this as the bin content and click <strong>Save</strong>:<br/>
+              <code class="setup-code">{"construction":false}</code>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div>Copy your <strong>Bin ID</strong> (the long code in the URL) and your <strong>Master Key</strong> from Account → API Keys</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">4</div>
+            <div>Paste them below and click <strong>Save & Connect</strong></div>
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top:20px;">
+          <label>JSONBin Bin ID</label>
+          <input type="text" id="bin-id-input" placeholder="e.g. 6643f2c3acd3cb34a83e4b2c" />
+        </div>
+        <div class="field-row" style="margin-top:12px;">
+          <label>JSONBin Master Key (API Key)</label>
+          <input type="text" id="bin-key-input" placeholder="$2a$10$..." />
+        </div>
+        <button class="btn-save" style="margin-top:16px;" onclick="saveJsonBinConfig()">🔗 Save &amp; Connect</button>
+      </div>
+
+      <!-- CONTROL CARD (shown when configured) -->
+      <div class="sitemode-card" id="control-card" style="display:none;">
         <div class="sitemode-header">
           <div class="sitemode-header-text">
             <h3>🚧 Site Construction Mode</h3>
-            <p>Turn this on to show visitors a "Coming Soon" page while you work on the site. You will still be able to preview everything as admin.</p>
+            <p>Toggle this to show or hide the "Coming Soon" page for all visitors worldwide.</p>
           </div>
           <div class="toggle-wrap">
             <span class="toggle-label">Mode</span>
@@ -648,19 +708,21 @@
 
         <div class="sitemode-status live" id="sitemode-status">
           <div class="status-dot"></div>
-          <span id="sitemode-status-text">🟢 Site is <strong>LIVE</strong> — All visitors can see your website normally.</span>
+          <span id="sitemode-status-text">Checking status…</span>
         </div>
 
         <div class="sitemode-info">
           <h4>How it works</h4>
           <ul>
-            <li>When <strong>Construction Mode is ON</strong>, visitors see a beautiful "Coming Soon" page with your contact details.</li>
-            <li>When you are logged in as Admin, you will see a gold banner at the top of the site instead of the overlay.</li>
-            <li>When <strong>Construction Mode is OFF</strong>, your full website is visible to everyone.</li>
-            <li>This setting is saved in your browser — it will persist after you close and reopen the site.</li>
+            <li>When <strong>Construction Mode is ON</strong>, every visitor on any device sees the "Coming Soon" page.</li>
+            <li>When you are logged in as admin, you will see a gold banner — the full site is still visible to you.</li>
+            <li>When <strong>Construction Mode is OFF</strong>, your full website is visible to everyone worldwide.</li>
           </ul>
         </div>
+
+        <button onclick="resetJsonBinConfig()" style="margin-top:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;">Reset / Change JSONBin credentials</button>
       </div>
+
     </div>
 
     <!-- TEXT CONTENT EDITOR -->
@@ -776,6 +838,11 @@
 
   <script>
     // Auth guard
+    const isLocalAdminHost = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
+    if (!isLocalAdminHost) {
+      window.location.href = 'index.html';
+    }
+
     if (sessionStorage.getItem('jf_admin') !== 'true') {
       window.location.href = 'login.html';
     }
@@ -1040,36 +1107,104 @@
       window.location.href = 'login.html';
     }
 
-    // ===== CONSTRUCTION TOGGLE =====
-    function toggleConstruction(checkbox) {
+    // ===== CONSTRUCTION TOGGLE (JSONBin online storage) =====
+    const BIN_ID_KEY  = 'jf_bin_id';
+    const BIN_KEY_KEY = 'jf_bin_key';
+
+    function getBinConfig() {
+      return {
+        id:  localStorage.getItem(BIN_ID_KEY)  || '',
+        key: localStorage.getItem(BIN_KEY_KEY) || ''
+      };
+    }
+
+    function saveJsonBinConfig() {
+      const id  = document.getElementById('bin-id-input').value.trim();
+      const key = document.getElementById('bin-key-input').value.trim();
+      if (!id || !key) { alert('Please enter both the Bin ID and Master Key.'); return; }
+      localStorage.setItem(BIN_ID_KEY,  id);
+      localStorage.setItem(BIN_KEY_KEY, key);
+      showToast('✅ JSONBin connected! Fetching current status…');
+      initSiteMode();
+    }
+
+    function resetJsonBinConfig() {
+      if (!confirm('Reset JSONBin credentials?')) return;
+      localStorage.removeItem(BIN_ID_KEY);
+      localStorage.removeItem(BIN_KEY_KEY);
+      document.getElementById('setup-card').style.display    = 'block';
+      document.getElementById('control-card').style.display  = 'none';
+    }
+
+    async function fetchConstructionState() {
+      const { id, key } = getBinConfig();
+      if (!id || !key) return null;
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
+          headers: { 'X-Master-Key': key }
+        });
+        const json = await res.json();
+        return json.record.construction === true;
+      } catch(e) { return null; }
+    }
+
+    async function toggleConstruction(checkbox) {
+      const { id, key } = getBinConfig();
       const on = checkbox.checked;
-      localStorage.setItem('jf_construction', on ? 'true' : 'false');
-      updateSiteModeUI(on);
-      showToast(on ? '🚧 Construction mode ON — visitors see Coming Soon page' : '🟢 Site is now LIVE for all visitors');
+      checkbox.disabled = true;
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${id}`, {
+          method:  'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+          body: JSON.stringify({ construction: on })
+        });
+        if (!res.ok) throw new Error('Failed');
+        updateSiteModeUI(on);
+        showToast(on ? '🚧 Construction mode ON — all visitors see Coming Soon' : '🟢 Site is now LIVE for all visitors');
+      } catch(e) {
+        showToast('❌ Error updating — check your JSONBin credentials');
+        checkbox.checked = !on;
+      }
+      checkbox.disabled = false;
     }
 
     function updateSiteModeUI(on) {
-      const status  = document.getElementById('sitemode-status');
-      const text    = document.getElementById('sitemode-status-text');
-      const thumb   = document.getElementById('toggle-thumb');
+      const status = document.getElementById('sitemode-status');
+      const text   = document.getElementById('sitemode-status-text');
+      const thumb  = document.getElementById('toggle-thumb');
+      const cb     = document.getElementById('uc-toggle');
+      if (!status) return;
       if (on) {
-        status.className = 'sitemode-status construction';
-        text.innerHTML   = '🚧 Construction Mode <strong>ON</strong> — Visitors see the "Coming Soon" page.';
-        thumb.textContent = '🚧';
+        status.className  = 'sitemode-status construction';
+        text.innerHTML    = '🚧 Construction Mode <strong>ON</strong> — Visitors see the "Coming Soon" page.';
+        if (thumb) thumb.textContent = '🚧';
+        if (cb)    cb.checked = true;
       } else {
-        status.className = 'sitemode-status live';
-        text.innerHTML   = '🟢 Site is <strong>LIVE</strong> — All visitors can see your website normally.';
-        thumb.textContent = '🌐';
+        status.className  = 'sitemode-status live';
+        text.innerHTML    = '🟢 Site is <strong>LIVE</strong> — All visitors can see your website normally.';
+        if (thumb) thumb.textContent = '🌐';
+        if (cb)    cb.checked = false;
       }
     }
 
-    // Init toggle state on load
-    (function initSiteMode() {
-      const on = localStorage.getItem('jf_construction') === 'true';
-      const cb = document.getElementById('uc-toggle');
-      if (cb) cb.checked = on;
-      updateSiteModeUI(on);
-    })();
+    async function initSiteMode() {
+      const { id, key } = getBinConfig();
+      if (!id || !key) {
+        document.getElementById('setup-card').style.display   = 'block';
+        document.getElementById('control-card').style.display = 'none';
+        return;
+      }
+      document.getElementById('setup-card').style.display   = 'none';
+      document.getElementById('control-card').style.display = 'block';
+      const on = await fetchConstructionState();
+      if (on === null) {
+        document.getElementById('sitemode-status-text').innerHTML = '⚠️ Could not reach JSONBin — check your credentials.';
+      } else {
+        updateSiteModeUI(on);
+      }
+    }
+
+    initSiteMode();
 
     loadSaved();
     loadTextFields();

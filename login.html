@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Joyforth Foods – Admin Login</title>
+  <title>Joyforth Foods - Admin Login</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="images/logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -15,6 +16,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
     }
     .login-wrap {
       background: #fff;
@@ -34,12 +36,9 @@
       margin: 0 auto 12px;
       display: block;
     }
-    .login-logo h2 { font-size: 20px; font-weight: 800; color: #007A3D; }
     .login-logo p { font-size: 13px; color: #5a6a5f; margin-top: 4px; }
-
     h3 { font-size: 22px; font-weight: 800; color: #1a3a26; margin-bottom: 6px; }
     .subtitle { font-size: 14px; color: #5a6a5f; margin-bottom: 28px; }
-
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
     label { font-size: 13px; font-weight: 600; color: #1a3a26; }
     input {
@@ -52,7 +51,6 @@
       transition: border-color .2s;
     }
     input:focus { border-color: #007A3D; }
-
     .btn-login {
       width: 100%;
       background: #007A3D;
@@ -67,16 +65,23 @@
       margin-top: 6px;
     }
     .btn-login:hover { background: #005a2c; }
-
+    .error, .notice {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      display: none;
+    }
     .error {
       background: #fef2f2;
       border: 1px solid #fca5a5;
       color: #dc2626;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
+    }
+    .notice {
+      background: #fffbeb;
+      border: 1px solid #f4c542;
+      color: #7a5c00;
     }
     .back-link {
       text-align: center;
@@ -95,8 +100,9 @@
       <p>Admin Portal</p>
     </div>
     <h3>Welcome Back</h3>
-    <p class="subtitle">Sign in to manage your website content</p>
+    <p class="subtitle" id="subtitle">Sign in to manage your website content</p>
 
+    <div class="notice" id="hosted-note">Admin access is disabled on the public hosted site. Keep these pages local or protect them with real server-side authentication before exposing them online.</div>
     <div class="error" id="error-msg">Incorrect username or password. Please try again.</div>
 
     <form id="login-form">
@@ -108,36 +114,46 @@
         <label for="password">Password</label>
         <input type="password" id="password" placeholder="Enter password" required autocomplete="current-password" />
       </div>
-      <button type="submit" class="btn-login">Sign In →</button>
+      <button type="submit" class="btn-login">Sign In &rarr;</button>
     </form>
 
     <div class="back-link">
-      <a href="index.html">← Back to website</a>
+      <a href="index.html">&larr; Back to website</a>
     </div>
   </div>
 
   <script>
-    // Credentials — change these to what you want
-    const ADMIN_USER = 'joyforth';
-    const ADMIN_PASS = 'admin2024';
+    const isLocalAdminHost = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
 
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const user = document.getElementById('username').value.trim();
-      const pass = document.getElementById('password').value;
-      const err  = document.getElementById('error-msg');
-
-      if (user === ADMIN_USER && pass === ADMIN_PASS) {
-        sessionStorage.setItem('jf_admin', 'true');
-        window.location.href = 'admin.html';
-      } else {
-        err.style.display = 'block';
-      }
-    });
-
-    // Already logged in
-    if (sessionStorage.getItem('jf_admin') === 'true') {
+    if (sessionStorage.getItem('jf_admin') === 'true' && isLocalAdminHost) {
       window.location.href = 'admin.html';
+    }
+
+    const form = document.getElementById('login-form');
+    const errorMessage = document.getElementById('error-msg');
+    const hostedNote = document.getElementById('hosted-note');
+    const subtitle = document.getElementById('subtitle');
+
+    if (!isLocalAdminHost) {
+      form.style.display = 'none';
+      hostedNote.style.display = 'block';
+      subtitle.textContent = 'This page is reserved for local-only admin preview.';
+    } else {
+      const ADMIN_USER = 'joyforth';
+      const ADMIN_PASS = 'admin2024';
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const user = document.getElementById('username').value.trim();
+        const pass = document.getElementById('password').value;
+
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+          sessionStorage.setItem('jf_admin', 'true');
+          window.location.href = 'admin.html';
+        } else {
+          errorMessage.style.display = 'block';
+        }
+      });
     }
   </script>
 </body>

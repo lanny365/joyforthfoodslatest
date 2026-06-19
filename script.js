@@ -1,54 +1,66 @@
-// ===== UNDER CONSTRUCTION GATE =====
-(function() {
-  const isAdmin      = sessionStorage.getItem('jf_admin') === 'true';
-  const isUnderConst = localStorage.getItem('jf_construction') === 'true';
-  const overlay      = document.getElementById('uc-overlay');
-  const banner       = document.getElementById('uc-banner');
+// ===== UNDER CONSTRUCTION GATE (reads from JSONBin and works on all devices) =====
+(async function() {
+  const isAdmin = sessionStorage.getItem('jf_admin') === 'true';
+  const overlay = document.getElementById('uc-overlay');
+  const banner = document.getElementById('uc-banner');
+  const binId = localStorage.getItem('jf_bin_id');
+  const binKey = localStorage.getItem('jf_bin_key');
 
-  if (isUnderConst) {
+  let isUnderConstruction = false;
+
+  if (binId && binKey) {
+    try {
+      const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+        headers: { 'X-Master-Key': binKey }
+      });
+      const json = await response.json();
+      isUnderConstruction = json.record.construction === true;
+    } catch (error) {
+      isUnderConstruction = false;
+    }
+  }
+
+  if (isUnderConstruction) {
     if (isAdmin) {
-      // Admin sees site + warning banner
       if (overlay) overlay.style.display = 'none';
-      if (banner)  banner.style.display  = 'flex';
+      if (banner) banner.style.display = 'flex';
     } else {
-      // Visitors see full overlay
       if (overlay) overlay.style.display = 'flex';
-      if (banner)  banner.style.display  = 'none';
+      if (banner) banner.style.display = 'none';
     }
   } else {
-    // Construction mode off — everyone sees site
     if (overlay) overlay.style.display = 'none';
-    if (banner)  banner.style.display  = 'none';
+    if (banner) banner.style.display = 'none';
   }
 })();
 
 // ===== HERO SLIDESHOW =====
 const heroSlides = [
   {
-    badge:   '🥜 100% NATURAL · NO PRESERVATIVES',
+    badge: '\u{1F95C} 100% NATURAL \u00B7 NO PRESERVATIVES',
     heading: 'The Finest<br /><span class="highlight">Premium</span><br />Peanuts',
-    desc:    'Enjoy the rich taste and crunchy goodness of JoyForth Peanuts. Carefully selected and processed to deliver freshness, quality, and nutrition in every bite.',
-    img:     'https://images.unsplash.com/photo-1567529692333-de9fd6772897?w=500&q=80',
-    alt:     'Premium Peanuts'
+    desc: 'Enjoy the rich taste and crunchy goodness of JoyForth Peanuts. Carefully selected and processed to deliver freshness, quality, and nutrition in every bite.',
+    img: 'https://images.unsplash.com/photo-1567529692333-de9fd6772897?w=500&q=80',
+    alt: 'Premium Peanuts'
   },
   {
-    badge:   '🍌 CRISPY · GOLDEN · IRRESISTIBLE',
+    badge: '\u{1F34C} CRISPY \u00B7 GOLDEN \u00B7 IRRESISTIBLE',
     heading: 'The Crunchiest<br /><span class="highlight">Premium</span><br />Plantain Chips',
-    desc:    'Made from premium plantains and expertly prepared for the perfect crunch, JoyForth Plantain Chips offer a delicious and healthy snacking experience. Available in exciting flavors, they are the ideal choice for lovers of authentic African snacks.',
-    img:     'https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=500&q=80',
-    alt:     'Premium Plantain Chips'
+    desc: 'Made from premium plantains and expertly prepared for the perfect crunch, JoyForth Plantain Chips offer a delicious and healthy snacking experience. Available in exciting flavors, they are the ideal choice for lovers of authentic African snacks.',
+    img: 'https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=500&q=80',
+    alt: 'Premium Plantain Chips'
   },
   {
-    badge:   '🍎 NATURALLY DRIED · NUTRIENT RICH',
+    badge: '\u{1F34E} NATURALLY DRIED \u00B7 NUTRIENT RICH',
     heading: 'Naturally Dried<br /><span class="highlight">Premium</span><br />Fruit Snacks',
-    desc:    'Experience nature\'s sweetness with JoyForth Dehydrated Fruits. Produced from carefully selected fresh fruits and naturally preserved to retain their flavor and nutrients, they provide a healthy, tasty, and convenient snack for people of all ages.',
-    img:     'https://images.unsplash.com/photo-1604148056278-7e3b3f83ebde?w=500&q=80',
-    alt:     'Dehydrated Fruit Snacks'
+    desc: "Experience nature's sweetness with JoyForth Dehydrated Fruits. Produced from carefully selected fresh fruits and naturally preserved to retain their flavor and nutrients, they provide a healthy, tasty, and convenient snack for people of all ages.",
+    img: 'https://images.unsplash.com/photo-1604148056278-7e3b3f83ebde?w=500&q=80',
+    alt: 'Dehydrated Fruit Snacks'
   }
 ];
 
 let currentSlide = 0;
-// Set initial background
+
 window.addEventListener('DOMContentLoaded', () => {
   const bg = document.getElementById('hero-bg');
   if (bg) bg.style.backgroundImage = `url('${heroSlides[0].img}')`;
@@ -57,22 +69,22 @@ window.addEventListener('DOMContentLoaded', () => {
 function goToSlide(index) {
   currentSlide = index;
   const slide = heroSlides[index];
-
   const heading = document.getElementById('hero-heading');
-  const desc    = document.getElementById('hero-desc');
-  const badge   = document.getElementById('hero-badge');
-  const bg      = document.getElementById('hero-bg');
-  const dots    = document.querySelectorAll('.dot');
+  const desc = document.getElementById('hero-desc');
+  const badge = document.getElementById('hero-badge');
+  const bg = document.getElementById('hero-bg');
+  const dots = document.querySelectorAll('.dot');
+
+  if (!heading || !desc || !badge) return;
 
   heading.classList.remove('hero-fade');
   desc.classList.remove('hero-fade');
   void heading.offsetWidth;
 
   heading.innerHTML = slide.heading;
-  desc.textContent  = slide.desc;
+  desc.textContent = slide.desc;
   badge.textContent = slide.badge;
 
-  // Crossfade background
   if (bg) {
     bg.style.opacity = '0';
     setTimeout(() => {
@@ -83,10 +95,15 @@ function goToSlide(index) {
 
   heading.classList.add('hero-fade');
   desc.classList.add('hero-fade');
-  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+  dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === index));
 }
 
-// Dot click
+function nextSlide() {
+  goToSlide((currentSlide + 1) % heroSlides.length);
+}
+
+let slideTimer = setInterval(nextSlide, 60000);
+
 document.querySelectorAll('.dot').forEach(dot => {
   dot.addEventListener('click', () => {
     clearInterval(slideTimer);
@@ -95,21 +112,12 @@ document.querySelectorAll('.dot').forEach(dot => {
   });
 });
 
-function nextSlide() {
-  goToSlide((currentSlide + 1) % heroSlides.length);
-}
-
-let slideTimer = setInterval(nextSlide, 60000);
-
 // ===== LOAD ADMIN-UPLOADED IMAGES =====
 function applyAdminImages() {
   const maps = [
-    { key: 'hero-0', el: null },   // handled in slideshow
-    { key: 'hero-1', el: null },
-    { key: 'hero-2', el: null },
-    { key: 'cat-0',  selector: '.varieties-grid .variety-card:nth-child(1) img' },
-    { key: 'cat-1',  selector: '.varieties-grid .variety-card:nth-child(2) img' },
-    { key: 'cat-2',  selector: '.varieties-grid .variety-card:nth-child(3) img' },
+    { key: 'cat-0', selector: '.varieties-grid .variety-card:nth-child(1) img' },
+    { key: 'cat-1', selector: '.varieties-grid .variety-card:nth-child(2) img' },
+    { key: 'cat-2', selector: '.varieties-grid .variety-card:nth-child(3) img' },
     { key: 'story-main', selector: '.story-img-main' },
     { key: 'prod-0', selector: '#products-grid .product-card:nth-child(1) img' },
     { key: 'prod-1', selector: '#products-grid .product-card:nth-child(2) img' },
@@ -118,60 +126,116 @@ function applyAdminImages() {
     { key: 'prod-4', selector: '#products-grid .product-card:nth-child(5) img' },
     { key: 'prod-5', selector: '#products-grid .product-card:nth-child(6) img' },
     { key: 'prod-6', selector: '#products-grid .product-card:nth-child(7) img' },
-    { key: 'prod-7', selector: '#products-grid .product-card:nth-child(8) img' },
+    { key: 'prod-7', selector: '#products-grid .product-card:nth-child(8) img' }
   ];
+
   maps.forEach(({ key, selector }) => {
     const saved = localStorage.getItem('jf_img_' + key);
-    if (saved && selector) {
-      const el = document.querySelector(selector);
-      if (el) el.src = saved;
-    }
+    if (!saved) return;
+    const element = document.querySelector(selector);
+    if (element) element.src = saved;
   });
-  // Override hero slide images with admin uploads
-  ['hero-0','hero-1','hero-2'].forEach((key, i) => {
+
+  ['hero-0', 'hero-1', 'hero-2'].forEach((key, index) => {
     const saved = localStorage.getItem('jf_img_' + key);
-    if (saved) heroSlides[i].img = saved;
+    if (saved) heroSlides[index].img = saved;
   });
 }
 applyAdminImages();
+
+function setMultilineHtml(selector, value) {
+  const element = document.querySelector(selector);
+  if (!element || !value) return;
+  element.innerHTML = value.replace(/\n/g, '<br />');
+}
+
+function currentEmail() {
+  const emailElement = document.querySelector('.contact-card.orange strong');
+  return emailElement ? emailElement.textContent.trim() : 'info@joyforthfoods.com';
+}
+
+function currentWhatsApp() {
+  const whatsappElement = document.querySelector('.contact-card.green strong');
+  return whatsappElement ? whatsappElement.textContent.replace(/\D/g, '') : '2348023176523';
+}
 
 // ===== APPLY ADMIN TEXT =====
 function applyAdminText() {
   const get = key => localStorage.getItem('jf_txt_' + key);
 
-  // Hero slides
-  const h0 = get('txt-hero0-heading'); if (h0) heroSlides[0].heading = h0 + '<br />';
-  const d0 = get('txt-hero0-desc');    if (d0) heroSlides[0].desc    = d0;
-  const h1 = get('txt-hero1-heading'); if (h1) heroSlides[1].heading = h1 + '<br />';
-  const d1 = get('txt-hero1-desc');    if (d1) heroSlides[1].desc    = d1;
-  const h2 = get('txt-hero2-heading'); if (h2) heroSlides[2].heading = h2 + '<br />';
-  const d2 = get('txt-hero2-desc');    if (d2) heroSlides[2].desc    = d2;
+  const heroHeading0 = get('txt-hero0-heading');
+  const heroDesc0 = get('txt-hero0-desc');
+  const heroHeading1 = get('txt-hero1-heading');
+  const heroDesc1 = get('txt-hero1-desc');
+  const heroHeading2 = get('txt-hero2-heading');
+  const heroDesc2 = get('txt-hero2-desc');
 
-  // Story
-  const sh = get('txt-story-heading');
-  if (sh) { const el = document.querySelector('.story-text h2'); if (el) el.textContent = sh; }
-  const sp1 = get('txt-story-p1');
-  if (sp1) { const el = document.querySelector('.story-text p:nth-of-type(1)'); if (el) el.textContent = sp1; }
-  const sp2 = get('txt-story-p2');
-  if (sp2) { const el = document.querySelector('.story-text p:nth-of-type(2)'); if (el) el.textContent = sp2; }
+  if (heroHeading0) heroSlides[0].heading = heroHeading0 + '<br />';
+  if (heroDesc0) heroSlides[0].desc = heroDesc0;
+  if (heroHeading1) heroSlides[1].heading = heroHeading1 + '<br />';
+  if (heroDesc1) heroSlides[1].desc = heroDesc1;
+  if (heroHeading2) heroSlides[2].heading = heroHeading2 + '<br />';
+  if (heroDesc2) heroSlides[2].desc = heroDesc2;
 
-  // Contact
-  const wa = get('txt-whatsapp');
-  if (wa) { document.querySelectorAll('.contact-card strong').forEach(el => { if (el.textContent.startsWith('+')) el.textContent = wa; }); }
-  const em = get('txt-email');
-  if (em) { document.querySelectorAll('.contact-card strong, .footer-links p').forEach(el => { if (el.textContent.includes('@')) el.textContent = em; }); }
-  const uk = get('txt-addr-uk');
-  if (uk) { const el = document.querySelector('[data-addr="uk"]'); if (el) el.textContent = uk; }
-  const ng = get('txt-addr-ng');
-  if (ng) { const el = document.querySelector('[data-addr="ng"]'); if (el) el.textContent = ng; }
+  const storyHeading = get('txt-story-heading');
+  if (storyHeading) {
+    const element = document.querySelector('.story-text h2');
+    if (element) element.textContent = storyHeading;
+  }
 
-  // Footer
-  const ftag = get('txt-footer-tag');
-  if (ftag) { const el = document.querySelector('.footer-brand p'); if (el) el.textContent = ftag; }
-  const nh = get('txt-newsletter-heading');
-  if (nh) { const el = document.querySelector('.newsletter h3'); if (el) el.textContent = nh; }
-  const ns = get('txt-newsletter-sub');
-  if (ns) { const el = document.querySelector('.newsletter p'); if (el) el.textContent = ns; }
+  const storyParagraph1 = get('txt-story-p1');
+  if (storyParagraph1) {
+    const element = document.querySelector('.story-text p:nth-of-type(1)');
+    if (element) element.textContent = storyParagraph1;
+  }
+
+  const storyParagraph2 = get('txt-story-p2');
+  if (storyParagraph2) {
+    const element = document.querySelector('.story-text p:nth-of-type(2)');
+    if (element) element.textContent = storyParagraph2;
+  }
+
+  const whatsapp = get('txt-whatsapp');
+  if (whatsapp) {
+    document.querySelectorAll('.contact-card strong').forEach(element => {
+      if (element.textContent.trim().startsWith('+')) element.textContent = whatsapp;
+    });
+    const whatsappLink = document.querySelector('.uc-wa');
+    if (whatsappLink) whatsappLink.href = `https://wa.me/${whatsapp.replace(/\D/g, '')}`;
+  }
+
+  const email = get('txt-email');
+  if (email) {
+    document.querySelectorAll('.contact-card strong, .footer-links p').forEach(element => {
+      if (element.textContent.includes('@')) element.textContent = email;
+    });
+    const overlayEmail = document.querySelector('.uc-email');
+    if (overlayEmail) {
+      overlayEmail.href = `mailto:${email}`;
+      overlayEmail.innerHTML = `&#9993; ${email}`;
+    }
+  }
+
+  setMultilineHtml('[data-addr="uk"]', get('txt-addr-uk'));
+  setMultilineHtml('[data-addr="ng"]', get('txt-addr-ng'));
+
+  const footerTag = get('txt-footer-tag');
+  if (footerTag) {
+    const element = document.querySelector('.footer-brand p');
+    if (element) element.textContent = footerTag;
+  }
+
+  const newsletterHeading = get('txt-newsletter-heading');
+  if (newsletterHeading) {
+    const element = document.querySelector('.newsletter h3');
+    if (element) element.textContent = newsletterHeading;
+  }
+
+  const newsletterSubtext = get('txt-newsletter-sub');
+  if (newsletterSubtext) {
+    const element = document.querySelector('.newsletter p');
+    if (element) element.textContent = newsletterSubtext;
+  }
 }
 applyAdminText();
 
@@ -179,114 +243,152 @@ applyAdminText();
 (function loadAdminReviews() {
   const saved = JSON.parse(localStorage.getItem('jf_reviews') || '[]');
   if (!saved.length) return;
-  const track = document.getElementById('testi-track');
-  if (!track) return;
-  track.innerHTML = '';
-  saved.forEach(r => {
-    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-    const initials = r.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-    track.innerHTML += `
+
+  const trackElement = document.getElementById('testi-track');
+  if (!trackElement) return;
+
+  trackElement.innerHTML = '';
+  saved.forEach(review => {
+    const stars = '\u2605'.repeat(review.rating) + '\u2606'.repeat(5 - review.rating);
+    const initials = review.name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    trackElement.innerHTML += `
       <div class="testi-card">
         <div class="testi-stars">${stars}</div>
-        <p class="testi-text">"${r.text}"</p>
+        <p class="testi-text">"${review.text}"</p>
         <div class="testi-author">
           <div class="testi-avatar">${initials}</div>
-          <div><strong>${r.name}</strong><span>${r.location}</span></div>
+          <div><strong>${review.name}</strong><span>${review.location}</span></div>
         </div>
       </div>`;
   });
 })();
 
-// Mobile menu toggle
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobile-menu');
-hamburger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+if (hamburger && mobileMenu) {
+  hamburger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+}
 
-// Product filter tabs
 const tabs = document.querySelectorAll('.tab');
 const cards = document.querySelectorAll('.product-card');
-
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
+    tabs.forEach(item => item.classList.remove('active'));
     tab.classList.add('active');
     const filter = tab.dataset.filter;
     cards.forEach(card => {
-      if (filter === 'all' || card.dataset.category === filter) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
-      }
+      const matches = filter === 'all' || card.dataset.category === filter;
+      card.classList.toggle('hidden', !matches);
     });
   });
 });
 
 // ===== TESTIMONIALS CAROUSEL =====
-const track      = document.getElementById('testi-track');
-const dotsWrap   = document.getElementById('testi-dots');
+const track = document.getElementById('testi-track');
+const dotsWrap = document.getElementById('testi-dots');
 const totalCards = track ? track.children.length : 0;
 let visibleCount = window.innerWidth <= 860 ? 1 : 3;
-let testitIdx    = 0;
-let maxIdx       = Math.max(0, totalCards - visibleCount);
+let testimonialIndex = 0;
+let maxIndex = Math.max(0, totalCards - visibleCount);
 
-// Build dots
 if (dotsWrap) {
-  for (let i = 0; i <= maxIdx; i++) {
-    const d = document.createElement('button');
-    d.className = 'testi-dot' + (i === 0 ? ' active' : '');
-    d.addEventListener('click', () => { testitIdx = i; applyTesti(); });
-    dotsWrap.appendChild(d);
+  for (let index = 0; index <= maxIndex; index += 1) {
+    const dot = document.createElement('button');
+    dot.className = 'testi-dot' + (index === 0 ? ' active' : '');
+    dot.addEventListener('click', () => {
+      testimonialIndex = index;
+      applyTestimonialTrack();
+    });
+    dotsWrap.appendChild(dot);
   }
 }
 
-function applyTesti() {
+function applyTestimonialTrack() {
   if (!track) return;
-  const cardW = track.parentElement.offsetWidth / visibleCount;
-  track.style.transform = `translateX(-${testitIdx * cardW}px)`;
-  document.querySelectorAll('.testi-dot').forEach((d, i) => d.classList.toggle('active', i === testitIdx));
+  const cardWidth = track.parentElement.offsetWidth / visibleCount;
+  track.style.transform = `translateX(-${testimonialIndex * cardWidth}px)`;
+  document.querySelectorAll('.testi-dot').forEach((dot, index) => {
+    dot.classList.toggle('active', index === testimonialIndex);
+  });
 }
 
-function moveTestimonial(dir) {
-  testitIdx = Math.max(0, Math.min(testitIdx + dir, maxIdx));
-  applyTesti();
+function moveTestimonial(direction) {
+  testimonialIndex = Math.max(0, Math.min(testimonialIndex + direction, maxIndex));
+  applyTestimonialTrack();
 }
+window.moveTestimonial = moveTestimonial;
 
-// Auto-advance every 5s
 setInterval(() => {
-  testitIdx = testitIdx >= maxIdx ? 0 : testitIdx + 1;
-  applyTesti();
+  testimonialIndex = testimonialIndex >= maxIndex ? 0 : testimonialIndex + 1;
+  applyTestimonialTrack();
 }, 5000);
 
-// Recalc on resize
 window.addEventListener('resize', () => {
   visibleCount = window.innerWidth <= 860 ? 1 : 3;
-  maxIdx = Math.max(0, totalCards - visibleCount);
-  testitIdx = 0;
-  applyTesti();
+  maxIndex = Math.max(0, totalCards - visibleCount);
+  testimonialIndex = 0;
+  applyTestimonialTrack();
 });
 
-// Contact form
-function handleSubmit(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('.btn-send');
-  btn.textContent = '✓ Message Sent!';
-  btn.style.background = '#059669';
-  setTimeout(() => {
-    btn.textContent = '✈ Send Message';
-    btn.style.background = '';
-    e.target.reset();
-  }, 3000);
-}
+// ===== CONTACT FORM =====
+(function setupContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
 
-// Newsletter form
-function handleNewsletter(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('button');
-  btn.textContent = 'Subscribed ✓';
-  btn.style.background = '#059669';
+  form.addEventListener('submit', event => {
+    const action = form.getAttribute('action') || '';
+    if (!action.includes('YOUR_FORM_ID')) return;
+
+    event.preventDefault();
+
+    const name = form.querySelector('#name')?.value.trim() || 'Website visitor';
+    const email = form.querySelector('#email')?.value.trim() || '';
+    const message = form.querySelector('#message')?.value.trim() || '';
+    const targetEmail = currentEmail();
+    const button = form.querySelector('.btn-send');
+    const subject = encodeURIComponent('Website enquiry from ' + name);
+    const body = encodeURIComponent(
+      'Name: ' + name + '\n' +
+      'Email: ' + email + '\n' +
+      'WhatsApp: ' + currentWhatsApp() + '\n\n' +
+      message
+    );
+
+    if (button) {
+      button.textContent = 'Opening email app...';
+      button.style.background = '#059669';
+    }
+
+    window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+
+    setTimeout(() => {
+      if (button) {
+        button.textContent = '\u2708 Send Message';
+        button.style.background = '';
+      }
+    }, 3000);
+  });
+})();
+
+// ===== NEWSLETTER FORM =====
+function handleNewsletter(event) {
+  event.preventDefault();
+  const button = event.target.querySelector('button');
+  if (!button) return;
+
+  button.textContent = 'Subscribed \u2713';
+  button.style.background = '#059669';
+
   setTimeout(() => {
-    btn.textContent = 'Subscribe →';
-    btn.style.background = '';
-    e.target.reset();
+    button.textContent = 'Subscribe \u2192';
+    button.style.background = '';
+    event.target.reset();
   }, 3000);
 }
+window.handleNewsletter = handleNewsletter;
