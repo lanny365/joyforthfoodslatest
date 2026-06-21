@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Joyforth Foods – Admin Dashboard</title>
+  <title>Lifelink Foods – Admin Dashboard</title>
   <link rel="icon" type="image/png" href="images/logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -436,7 +436,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="images/logo.png" alt="Joyforth Foods" />
+      <img src="images/logo.png" alt="Lifelink Foods" />
       <p>Admin Dashboard</p>
     </div>
     <div class="nav-item active" onclick="showPanel('dashboard')">
@@ -473,7 +473,7 @@
     <div class="topbar">
       <div>
         <h1 id="panel-title">Dashboard</h1>
-        <p id="panel-sub">Welcome back, Joyforth Admin</p>
+        <p id="panel-sub">Welcome back, Lifelink Admin</p>
       </div>
       <a href="index.html" class="view-site" target="_blank">View Website →</a>
     </div>
@@ -793,7 +793,7 @@
           </div>
           <div class="field-row">
             <label>Email Address</label>
-            <input type="email" id="txt-email" placeholder="info@joyforthfoods.com" />
+            <input type="email" id="txt-email" placeholder="info@lifelinkfoods.com" />
           </div>
           <div class="field-row">
             <label>UK Office Address</label>
@@ -871,7 +871,7 @@
 
     // Panel navigation
     const panels = { dashboard:'Dashboard', hero:'Hero Images', products:'Product Images', categories:'Category Images', story:'Our Story Image', content:'Edit Text Content', reviews:'Customer Reviews', sitemode:'Site Mode' };
-    const subs   = { dashboard:'Welcome back, Joyforth Admin', hero:'Upload slideshow images', products:'Upload product card images', categories:'Upload category section images', story:'Upload the Our Story section image', content:'Edit the text shown on your website', reviews:'Add, edit or remove customer testimonials', sitemode:'Control whether visitors see a Coming Soon page' };
+    const subs   = { dashboard:'Welcome back, Lifelink Admin', hero:'Upload slideshow images', products:'Upload product card images', categories:'Upload category section images', story:'Upload the Our Story section image', content:'Edit the text shown on your website', reviews:'Add, edit or remove customer testimonials', sitemode:'Control whether visitors see a Coming Soon page' };
 
     function showPanel(name) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));

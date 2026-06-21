@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /login.html
 
-Sitemap: https://joyforthfoods.com/sitemap.xml
+Sitemap: https://lifelinkfoods.com/sitemap.xml

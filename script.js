@@ -50,21 +50,21 @@ const heroSlides = [
   {
     badge: '\u{1F95C} 100% NATURAL \u00B7 NO PRESERVATIVES',
     heading: 'The Finest<br /><span class="highlight">Premium</span><br />Peanuts',
-    desc: 'Enjoy the rich taste and crunchy goodness of JoyForth Peanuts. Carefully selected and processed to deliver freshness, quality, and nutrition in every bite.',
+    desc: 'Enjoy the rich taste and crunchy goodness of Lifelink Peanuts. Carefully selected and processed to deliver freshness, quality, and nutrition in every bite.',
     img: 'https://images.unsplash.com/photo-1567529692333-de9fd6772897?w=500&q=80',
     alt: 'Premium Peanuts'
   },
   {
     badge: '\u{1F34C} CRISPY \u00B7 GOLDEN \u00B7 IRRESISTIBLE',
     heading: 'The Crunchiest<br /><span class="highlight">Premium</span><br />Plantain Chips',
-    desc: 'Made from premium plantains and expertly prepared for the perfect crunch, JoyForth Plantain Chips offer a delicious and healthy snacking experience. Available in exciting flavors, they are the ideal choice for lovers of authentic African snacks.',
+    desc: 'Made from premium plantains and expertly prepared for the perfect crunch, Lifelink Plantain Chips offer a delicious and healthy snacking experience. Available in exciting flavors, they are the ideal choice for lovers of authentic African snacks.',
     img: 'https://images.unsplash.com/photo-1621447504864-d8686e12698c?w=500&q=80',
     alt: 'Premium Plantain Chips'
   },
   {
     badge: '\u{1F34E} NATURALLY DRIED \u00B7 NUTRIENT RICH',
     heading: 'Naturally Dried<br /><span class="highlight">Premium</span><br />Fruit Snacks',
-    desc: "Experience nature's sweetness with JoyForth Dehydrated Fruits. Produced from carefully selected fresh fruits and naturally preserved to retain their flavor and nutrients, they provide a healthy, tasty, and convenient snack for people of all ages.",
+    desc: "Experience nature's sweetness with Lifelink Dehydrated Fruits. Produced from carefully selected fresh fruits and naturally preserved to retain their flavor and nutrients, they provide a healthy, tasty, and convenient snack for people of all ages.",
     img: 'https://images.unsplash.com/photo-1604148056278-7e3b3f83ebde?w=500&q=80',
     alt: 'Dehydrated Fruit Snacks'
   }
@@ -162,7 +162,7 @@ function setMultilineHtml(selector, value) {
 
 function currentEmail() {
   const emailElement = document.querySelector('.contact-card.orange strong');
-  return emailElement ? emailElement.textContent.trim() : 'info@joyforthfoods.com';
+  return emailElement ? emailElement.textContent.trim() : 'info@lifelinkfoods.com';
 }
 
 function currentWhatsApp() {
