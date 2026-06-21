@@ -1,24 +1,35 @@
+function getPublicSiteModeConfig() {
+  const config = window.JF_SITE_CONFIG || {};
+  return {
+    id: String(config.jsonBinId || '').trim(),
+    readKey: String(config.jsonBinReadKey || '').trim()
+  };
+}
+
+async function readConstructionStateFromJsonBin() {
+  const { id, readKey } = getPublicSiteModeConfig();
+  if (!id || !readKey) return false;
+
+  try {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest?meta=false`, {
+      headers: { 'X-Access-Key': readKey }
+    });
+
+    if (!response.ok) return false;
+
+    const record = await response.json();
+    return record.construction === true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // ===== UNDER CONSTRUCTION GATE (reads from JSONBin and works on all devices) =====
 (async function() {
   const isAdmin = sessionStorage.getItem('jf_admin') === 'true';
   const overlay = document.getElementById('uc-overlay');
   const banner = document.getElementById('uc-banner');
-  const binId = localStorage.getItem('jf_bin_id');
-  const binKey = localStorage.getItem('jf_bin_key');
-
-  let isUnderConstruction = false;
-
-  if (binId && binKey) {
-    try {
-      const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-        headers: { 'X-Master-Key': binKey }
-      });
-      const json = await response.json();
-      isUnderConstruction = json.record.construction === true;
-    } catch (error) {
-      isUnderConstruction = false;
-    }
-  }
+  const isUnderConstruction = await readConstructionStateFromJsonBin();
 
   if (isUnderConstruction) {
     if (isAdmin) {

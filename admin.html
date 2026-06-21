@@ -660,7 +660,7 @@
         <div class="setup-steps">
           <div class="setup-step">
             <div class="step-num">1</div>
-            <div>Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--green);font-weight:700;">jsonbin.io</a> → Create a free account → Click <strong>"Create Bin"</strong></div>
+            <div>Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--green);font-weight:700;">jsonbin.io</a> → Create a free account → Click <strong>"Create Bin"</strong> and keep it <strong>private</strong></div>
           </div>
           <div class="setup-step">
             <div class="step-num">2</div>
@@ -670,19 +670,14 @@
           </div>
           <div class="setup-step">
             <div class="step-num">3</div>
-            <div>Copy your <strong>Bin ID</strong> (the long code in the URL) and your <strong>Master Key</strong> from Account → API Keys</div>
+            <div>Create a <strong>Read-only Access Key</strong> with <strong>Bins Read</strong> permission, then open <strong>site-config.js</strong> and paste your <strong>Bin ID</strong> plus that read key.</div>
           </div>
           <div class="setup-step">
             <div class="step-num">4</div>
-            <div>Paste them below and click <strong>Save & Connect</strong></div>
+            <div>Paste your <strong>Master Key</strong> below and click <strong>Save & Connect</strong>. The key stays only in this browser, while the public site reads from <strong>site-config.js</strong>.</div>
           </div>
         </div>
-
         <div class="field-row" style="margin-top:20px;">
-          <label>JSONBin Bin ID</label>
-          <input type="text" id="bin-id-input" placeholder="e.g. 6643f2c3acd3cb34a83e4b2c" />
-        </div>
-        <div class="field-row" style="margin-top:12px;">
           <label>JSONBin Master Key (API Key)</label>
           <input type="text" id="bin-key-input" placeholder="$2a$10$..." />
         </div>
@@ -836,13 +831,9 @@
 
   <div class="success-toast" id="toast">✅ Image uploaded successfully!</div>
 
+  <script src="site-config.js"></script>
   <script>
     // Auth guard
-    const isLocalAdminHost = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-    if (!isLocalAdminHost) {
-      window.location.href = 'index.html';
-    }
-
     if (sessionStorage.getItem('jf_admin') !== 'true') {
       window.location.href = 'login.html';
     }
@@ -1108,54 +1099,53 @@
     }
 
     // ===== CONSTRUCTION TOGGLE (JSONBin online storage) =====
-    const BIN_ID_KEY  = 'jf_bin_id';
-    const BIN_KEY_KEY = 'jf_bin_key';
+    const BIN_MASTER_KEY = 'jf_bin_master_key';
 
     function getBinConfig() {
+      const publicConfig = window.JF_SITE_CONFIG || {};
       return {
-        id:  localStorage.getItem(BIN_ID_KEY)  || '',
-        key: localStorage.getItem(BIN_KEY_KEY) || ''
+        id: String(publicConfig.jsonBinId || '').trim(),
+        readKey: String(publicConfig.jsonBinReadKey || '').trim(),
+        masterKey: localStorage.getItem(BIN_MASTER_KEY) || ''
       };
     }
 
     function saveJsonBinConfig() {
-      const id  = document.getElementById('bin-id-input').value.trim();
       const key = document.getElementById('bin-key-input').value.trim();
-      if (!id || !key) { alert('Please enter both the Bin ID and Master Key.'); return; }
-      localStorage.setItem(BIN_ID_KEY,  id);
-      localStorage.setItem(BIN_KEY_KEY, key);
+      if (!key) { alert('Please enter your JSONBin Master Key.'); return; }
+      localStorage.setItem(BIN_MASTER_KEY, key);
       showToast('✅ JSONBin connected! Fetching current status…');
       initSiteMode();
     }
 
     function resetJsonBinConfig() {
       if (!confirm('Reset JSONBin credentials?')) return;
-      localStorage.removeItem(BIN_ID_KEY);
-      localStorage.removeItem(BIN_KEY_KEY);
+      localStorage.removeItem(BIN_MASTER_KEY);
       document.getElementById('setup-card').style.display    = 'block';
       document.getElementById('control-card').style.display  = 'none';
     }
 
     async function fetchConstructionState() {
-      const { id, key } = getBinConfig();
-      if (!id || !key) return null;
+      const { id, readKey } = getBinConfig();
+      if (!id || !readKey) return null;
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, {
-          headers: { 'X-Master-Key': key }
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest?meta=false`, {
+          headers: { 'X-Access-Key': readKey }
         });
+        if (!res.ok) throw new Error('Failed');
         const json = await res.json();
-        return json.record.construction === true;
+        return json.construction === true;
       } catch(e) { return null; }
     }
 
     async function toggleConstruction(checkbox) {
-      const { id, key } = getBinConfig();
+      const { id, masterKey } = getBinConfig();
       const on = checkbox.checked;
       checkbox.disabled = true;
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${id}`, {
           method:  'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': masterKey },
           body: JSON.stringify({ construction: on })
         });
         if (!res.ok) throw new Error('Failed');
@@ -1188,8 +1178,10 @@
     }
 
     async function initSiteMode() {
-      const { id, key } = getBinConfig();
-      if (!id || !key) {
+      const { id, readKey, masterKey } = getBinConfig();
+      const input = document.getElementById('bin-key-input');
+      if (input && masterKey) input.value = masterKey;
+      if (!id || !readKey || !masterKey) {
         document.getElementById('setup-card').style.display   = 'block';
         document.getElementById('control-card').style.display = 'none';
         return;

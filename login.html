@@ -123,9 +123,7 @@
   </div>
 
   <script>
-    const isLocalAdminHost = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
-
-    if (sessionStorage.getItem('jf_admin') === 'true' && isLocalAdminHost) {
+    if (sessionStorage.getItem('jf_admin') === 'true') {
       window.location.href = 'admin.html';
     }
 
@@ -133,28 +131,25 @@
     const errorMessage = document.getElementById('error-msg');
     const hostedNote = document.getElementById('hosted-note');
     const subtitle = document.getElementById('subtitle');
+    const ADMIN_USER = 'joyforth';
+    const ADMIN_PASS = 'admin2024';
 
-    if (!isLocalAdminHost) {
-      form.style.display = 'none';
-      hostedNote.style.display = 'block';
-      subtitle.textContent = 'This page is reserved for local-only admin preview.';
-    } else {
-      const ADMIN_USER = 'joyforth';
-      const ADMIN_PASS = 'admin2024';
+    hostedNote.style.display = 'none';
+    subtitle.textContent = 'Sign in to manage your website content';
+    form.style.display = 'block';
 
-      form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const user = document.getElementById('username').value.trim();
-        const pass = document.getElementById('password').value;
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
 
-        if (user === ADMIN_USER && pass === ADMIN_PASS) {
-          sessionStorage.setItem('jf_admin', 'true');
-          window.location.href = 'admin.html';
-        } else {
-          errorMessage.style.display = 'block';
-        }
-      });
-    }
+      if (user === ADMIN_USER && pass === ADMIN_PASS) {
+        sessionStorage.setItem('jf_admin', 'true');
+        window.location.href = 'admin.html';
+      } else {
+        errorMessage.style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>
